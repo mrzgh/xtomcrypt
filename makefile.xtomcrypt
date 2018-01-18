@@ -24,7 +24,7 @@ UNINSTALL_CMD = rm
 
 #Output filenames for various targets.
 ifndef LIBNAME
-   LIBNAME=libcuten.a
+   LIBNAME=libxtomcrypt.a
 endif
 
 
