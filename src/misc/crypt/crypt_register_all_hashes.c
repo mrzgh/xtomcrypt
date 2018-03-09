@@ -88,6 +88,11 @@ int register_all_hashes(void)
    REGISTER_HASH(&blake2b_384_desc);
    REGISTER_HASH(&blake2b_512_desc);
 #endif
+#ifdef LTC_PHOTON
+   REGISTER_HASH(&photon80_desc);
+   REGISTER_HASH(&photon128_desc);
+#endif
+
 #ifdef LTC_CHC_HASH
    REGISTER_HASH(&chc_desc);
    LTC_ARGCHK((err = chc_register(find_cipher_any("aes", 8, 16))) == CRYPT_OK);
