@@ -722,6 +722,82 @@ int run_present() {
 	return CRYPT_OK;
 }
 
+int run_photon() {
+	int i;
+	hash_state hs;
+	unsigned char pt[48] = {
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+		0x12, 0xf1, 0xe7, 0xf9, 0x12, 0xb8, 0x29, 0xf9, 0xab, 0x31, 0x99, 0x01, 0xfc, 0xf9, 0xcd, 0x91
+	};
+	unsigned char digest[64];
+	unsigned int d = 5;
+	int hash_idx;
+
+	if (register_hash(&photon80_desc) == -1) {
+		printf("Error registering hash\n");
+		return -1;
+	}
+
+	// obtain the cipher ID
+	hash_idx = find_hash("photon-80");
+	if (hash_idx == -1) {
+		printf("Invalid hash\n");
+		return -1;
+	}
+
+	if (register_hash(&photon128_desc) == -1) {
+		printf("Error registering hash\n");
+		return -1;
+	}
+
+	// obtain the cipher ID
+	hash_idx = find_hash("photon-128");
+	if (hash_idx == -1) {
+		printf("Invalid hash\n");
+		return -1;
+	}
+
+	photon80_init(&hs);
+
+	photon80_process(&hs, pt, 20);
+
+	for (i = 0; i < d*d; ++i) {
+		if ((i % d) == 0) printf("\n");
+		printf("%1x ", hs.photon80.state[i]);
+	}
+
+	printf("\n");
+
+	photon80_done(&hs, digest);
+
+	// output digest is 10*8 = 80 bits
+	for (i = 0; i < 10; ++i) {
+		printf("%02x", digest[i]);
+	}
+
+	// PHOTON-128
+	d = 6;
+	photon128_init(&hs);
+
+	photon128_process(&hs, pt, 16);
+
+	for (i = 0; i < d*d; ++i) {
+		if ((i % d) == 0) printf("\n");
+		printf("%1x ", hs.photon128.state[i]);
+	}
+
+	printf("\n");
+
+	photon128_done(&hs, digest);
+
+	// output digest is 16*8 = 128 bits
+	for (i = 0; i < 16; ++i) {
+		printf("%02x", digest[i]);
+	}
+	return CRYPT_OK;
+}
+
 
 int main() {
 //	run_testvectors_ctr("aes");
