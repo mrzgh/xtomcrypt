@@ -668,7 +668,7 @@ int run_present() {
 	}
 	else {
 #ifdef PRINT
-		printf("Key                   = ");
+		printf("\n\nKey                   = ");
 		for (i=0; i<keylen; i++) printf("%02x ", key[i]);
 		printf("\n");
 

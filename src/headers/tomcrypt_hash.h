@@ -147,6 +147,30 @@ struct blake2b_state {
 };
 #endif
 
+#ifdef LTC_PHOTON80
+struct photon80_state {
+    ulong64 length;
+    ulong32 curlen;
+    unsigned char state[25]; // dxd=25 nibbles, valid for PHOTON-80
+    unsigned char saved_state[5]; // max is 5 nibbles at the moment
+    unsigned char buf[5]; // maximum bitrate size is 4.5 bytes, so 5 bytes
+    unsigned short bitrate; // in bits
+    unsigned short pending; // 1 if there is a msg pending to be hashed, 0 if none
+};
+#endif
+
+#ifdef LTC_PHOTON128
+struct photon128_state {
+    ulong64 length;
+    ulong32 curlen;
+    unsigned char state[36]; // dxd=36 nibbles, valid for PHOTON-128
+    unsigned char saved_state[5]; // max is 5 nibbles at the moment
+    unsigned char buf[5]; // maximum bitrate size is 4.5 bytes, so 5 bytes
+    unsigned short bitrate; // in bits
+    unsigned short pending; // 1 if there is a msg pending to be hashed, 0 if none
+};
+#endif
+
 typedef union Hash_state {
     char dummy[1];
 #ifdef LTC_CHC_HASH
@@ -461,6 +485,20 @@ int rmd320_process(hash_state * md, const unsigned char *in, unsigned long inlen
 int rmd320_done(hash_state * md, unsigned char *hash);
 int rmd320_test(void);
 extern const struct ltc_hash_descriptor rmd320_desc;
+#endif
+
+#ifdef LTC_PHOTON80
+int photon80_init(hash_state * md);
+int photon80_compress(hash_state *md, const unsigned char *in);
+int photon80_process(hash_state * md, const unsigned char *in, unsigned long inlen);
+int photon80_done(hash_state * md, unsigned char *out);
+#endif
+
+#ifdef LTC_PHOTON128
+int photon128_init(hash_state * md);
+int photon128_compress(hash_state *md, const unsigned char *in);
+int photon128_process(hash_state * md, const unsigned char *in, unsigned long inlen);
+int photon128_done(hash_state * md, unsigned char *out);
 #endif
 
 
