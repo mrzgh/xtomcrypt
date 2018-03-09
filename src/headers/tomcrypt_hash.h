@@ -220,6 +220,11 @@ typedef union Hash_state {
     struct blake2b_state blake2b;
 #endif
 
+#ifdef LTC_PHOTON
+    struct photon80_state photon80;
+    struct photon128_state photon128;
+#endif
+
     void *data;
 } hash_state;
 
