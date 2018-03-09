@@ -221,6 +221,7 @@ src/hashes/rmd128.o src/hashes/rmd160.o src/hashes/rmd256.o src/hashes/rmd320.o 
 src/hashes/sha2/sha224.o src/hashes/sha2/sha256.o src/hashes/sha2/sha384.o src/hashes/sha2/sha512.o \
 src/hashes/sha2/sha512_224.o src/hashes/sha2/sha512_256.o src/hashes/sha3.o src/hashes/sha3_test.o \
 src/hashes/tiger.o src/hashes/whirl/whirl.o src/mac/blake2/blake2bmac.o \
+src/hashes/photon.o \
 src/mac/blake2/blake2bmac_file.o src/mac/blake2/blake2bmac_memory.o \
 src/mac/blake2/blake2bmac_memory_multi.o src/mac/blake2/blake2bmac_test.o src/mac/blake2/blake2smac.o \
 src/mac/blake2/blake2smac_file.o src/mac/blake2/blake2smac_memory.o \
