@@ -174,19 +174,19 @@ int photon80_compress(hash_state *md, const unsigned char *in) {
     // in is an array of bytes, state is an array of nibbles
     for (i = 0; i < 3; ++i) {
 		for (j = 0; j < 2; ++j) {
-			md->photon.state[i] ^= in[(i & (0xF0 >> (j*4))) >> (1-j)*4];
+			md->photon80.state[i] ^= in[(i & (0xF0 >> (j*4))) >> (1-j)*4];
 		}
 	}
 
 	for (r = 0; r < 12; ++r) {
 		// AddConstants (AC)
 		for (i=0; i<d; i++) {
-			md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 		}
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon.state[i] = S[md->photon.state[i]];
+			md->photon80.state[i] = S[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -197,11 +197,11 @@ int photon80_compress(hash_state *md, const unsigned char *in) {
 			// row j is rotated j times to the left
 			for (j=0; j<i; j++) {
 				// col 0 to col d-1
-				temp = md->photon.state[i*d];
+				temp = md->photon80.state[i*d];
 				for (k=0; k<(d-1); k++) {
-					md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
 				}
-				md->photon.state[i*d+k] = temp;
+				md->photon80.state[i*d+k] = temp;
 			}
 		}
 
@@ -211,12 +211,12 @@ int photon80_compress(hash_state *md, const unsigned char *in) {
 		for (col=0; col<d; col++) {
 			for (i=0; i<d; i++) {
 				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
 				}
 			}
 		}
 
-		for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
 	}
 
 	return CRYPT_OK;
@@ -239,13 +239,13 @@ int photon80_process(hash_state * md, const unsigned char *in, unsigned long inl
 
 	// if the length of message to be hashed is less than the bitrate,
 	// then we need to save them first, and wait until the next hash call
-	if (inlen < md->photon.bitrate) {
-		md->photon.saved_state[0] = (in[0] & 0xf0) >> 4;
-		md->photon.saved_state[1] = (in[0] & 0x0f)     ;
-		md->photon.saved_state[2] = (in[1] & 0xf0) >> 4;
-		md->photon.saved_state[3] = (in[1] & 0x0f)     ;
-		md->photon.saved_state[4] = (in[2] & 0xf0) >> 4;
-		md->photon.pending = 1; // indicator to note that there are pending msg to be hashed
+	if (inlen < md->photon80.bitrate) {
+		md->photon80.saved_state[0] = (in[0] & 0xf0) >> 4;
+		md->photon80.saved_state[1] = (in[0] & 0x0f)     ;
+		md->photon80.saved_state[2] = (in[1] & 0xf0) >> 4;
+		md->photon80.saved_state[3] = (in[1] & 0x0f)     ;
+		md->photon80.saved_state[4] = (in[2] & 0xf0) >> 4;
+		md->photon80.pending = 1; // indicator to note that there are pending msg to be hashed
 
 		return CRYPT_OK;
 	}
@@ -254,7 +254,7 @@ int photon80_process(hash_state * md, const unsigned char *in, unsigned long inl
 		if ((err = photon80_compress(md, in)) != CRYPT_OK) {
 			return err;
 		}
-		n = MIN(inlen, md->photon.bitrate);
+		n = MIN(inlen, md->photon80.bitrate);
 		in 		+= n;
 		inlen 	-= n;
 	}
@@ -290,22 +290,22 @@ int photon80_done(hash_state * md, unsigned char *out) {
 	// output digest is 80 bits = 16 x 5
 
     // 1 of 5 set of 16-bit output
-	out[0]  = (md->photon.state[0] << 4);
-	out[0] ^= (md->photon.state[1]);
+	out[0]  = (md->photon80.state[0] << 4);
+	out[0] ^= (md->photon80.state[1]);
 
-	out[1]  = (md->photon.state[2] << 4);
-	out[1] ^= (md->photon.state[3]);
+	out[1]  = (md->photon80.state[2] << 4);
+	out[1] ^= (md->photon80.state[3]);
 
 	// Apply P
 	for (r = 0; r < 12; ++r) {
 		// AddConstants (AC)
 		for (i=0; i<d; i++) {
-			md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 		}
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon.state[i] = S[md->photon.state[i]];
+			md->photon80.state[i] = S[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -316,11 +316,11 @@ int photon80_done(hash_state * md, unsigned char *out) {
 			// row j is rotated j times to the left
 			for (j=0; j<i; j++) {
 				// col 0 to col d-1
-				temp = md->photon.state[i*d];
+				temp = md->photon80.state[i*d];
 				for (k=0; k<(d-1); k++) {
-					md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
 				}
-				md->photon.state[i*d+k] = temp;
+				md->photon80.state[i*d+k] = temp;
 			}
 		}
 
@@ -330,31 +330,31 @@ int photon80_done(hash_state * md, unsigned char *out) {
 		for (col=0; col<d; col++) {
 			for (i=0; i<d; i++) {
 				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
 				}
 			}
 		}
 
-		for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
 	}
 
     // 2 of 5 set of 16-bit output
-	out[2]  = (md->photon.state[0] << 4);
-	out[2] ^= (md->photon.state[1]);
+	out[2]  = (md->photon80.state[0] << 4);
+	out[2] ^= (md->photon80.state[1]);
 
-	out[3]  = (md->photon.state[2] << 4);
-	out[3] ^= (md->photon.state[3]);
+	out[3]  = (md->photon80.state[2] << 4);
+	out[3] ^= (md->photon80.state[3]);
 
 	// Apply P
 	for (r = 0; r < 12; ++r) {
 		// AddConstants (AC)
 		for (i=0; i<d; i++) {
-			md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 		}
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon.state[i] = S[md->photon.state[i]];
+			md->photon80.state[i] = S[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -365,11 +365,11 @@ int photon80_done(hash_state * md, unsigned char *out) {
 			// row j is rotated j times to the left
 			for (j=0; j<i; j++) {
 				// col 0 to col d-1
-				temp = md->photon.state[i*d];
+				temp = md->photon80.state[i*d];
 				for (k=0; k<(d-1); k++) {
-					md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
 				}
-				md->photon.state[i*d+k] = temp;
+				md->photon80.state[i*d+k] = temp;
 			}
 		}
 
@@ -379,31 +379,31 @@ int photon80_done(hash_state * md, unsigned char *out) {
 		for (col=0; col<d; col++) {
 			for (i=0; i<d; i++) {
 				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
 				}
 			}
 		}
 
-		for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
 	}
 
     // 3 of 5 set of 16-bit output
-	out[4]  = (md->photon.state[0] << 4);
-	out[4] ^= (md->photon.state[1]);
+	out[4]  = (md->photon80.state[0] << 4);
+	out[4] ^= (md->photon80.state[1]);
 
-	out[5]  = (md->photon.state[2] << 4);
-	out[5] ^= (md->photon.state[3]);
+	out[5]  = (md->photon80.state[2] << 4);
+	out[5] ^= (md->photon80.state[3]);
 
 	// Apply P
 	for (r = 0; r < 12; ++r) {
 		// AddConstants (AC)
 		for (i=0; i<d; i++) {
-			md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 		}
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon.state[i] = S[md->photon.state[i]];
+			md->photon80.state[i] = S[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -414,11 +414,11 @@ int photon80_done(hash_state * md, unsigned char *out) {
 			// row j is rotated j times to the left
 			for (j=0; j<i; j++) {
 				// col 0 to col d-1
-				temp = md->photon.state[i*d];
+				temp = md->photon80.state[i*d];
 				for (k=0; k<(d-1); k++) {
-					md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
 				}
-				md->photon.state[i*d+k] = temp;
+				md->photon80.state[i*d+k] = temp;
 			}
 		}
 
@@ -428,31 +428,31 @@ int photon80_done(hash_state * md, unsigned char *out) {
 		for (col=0; col<d; col++) {
 			for (i=0; i<d; i++) {
 				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
 				}
 			}
 		}
 
-		for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
 	}
 
     // 4 of 5 set of 16-bit output
-	out[6]  = (md->photon.state[0] << 4);
-	out[6] ^= (md->photon.state[1]);
+	out[6]  = (md->photon80.state[0] << 4);
+	out[6] ^= (md->photon80.state[1]);
 
-	out[7]  = (md->photon.state[2] << 4);
-	out[7] ^= (md->photon.state[3]);
+	out[7]  = (md->photon80.state[2] << 4);
+	out[7] ^= (md->photon80.state[3]);
 
 	// Apply P
 	for (r = 0; r < 12; ++r) {
 		// AddConstants (AC)
 		for (i=0; i<d; i++) {
-			md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 		}
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon.state[i] = S[md->photon.state[i]];
+			md->photon80.state[i] = S[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -463,11 +463,11 @@ int photon80_done(hash_state * md, unsigned char *out) {
 			// row j is rotated j times to the left
 			for (j=0; j<i; j++) {
 				// col 0 to col d-1
-				temp = md->photon.state[i*d];
+				temp = md->photon80.state[i*d];
 				for (k=0; k<(d-1); k++) {
-					md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
 				}
-				md->photon.state[i*d+k] = temp;
+				md->photon80.state[i*d+k] = temp;
 			}
 		}
 
@@ -477,20 +477,20 @@ int photon80_done(hash_state * md, unsigned char *out) {
 		for (col=0; col<d; col++) {
 			for (i=0; i<d; i++) {
 				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
 				}
 			}
 		}
 
-		for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
 	}
 
     // 5 of 5 set of 16-bit output
-	out[8]  = (md->photon.state[0] << 4);
-	out[8] ^= (md->photon.state[1]);
+	out[8]  = (md->photon80.state[0] << 4);
+	out[8] ^= (md->photon80.state[1]);
 
-	out[9]  = (md->photon.state[2] << 4);
-	out[9] ^= (md->photon.state[3]);
+	out[9]  = (md->photon80.state[2] << 4);
+	out[9] ^= (md->photon80.state[3]);
 
 	return CRYPT_OK;
 }
@@ -507,7 +507,7 @@ int photon128_init(hash_state * md) {
     //LTC_ARGCHK(md != NULL);
 
 	for (i = 0; i < 36; ++i) {
-		md->photon.state[i] = 0;
+		md->photon128.state[i] = 0;
 	}
 	// specific ones for PHOTON-128/16/16
 	// The t-bit internal state S is initialized by setting it to the
@@ -517,13 +517,13 @@ int photon128_init(hash_state * md) {
 	// r  = 16 = 0x10
 	// r' = 0x10
 	// IV = 00...00||0x20||0x10||0x10
-	md->photon.state[30] = 2;
-	md->photon.state[32] = 1;
-	md->photon.state[34] = 1;
+	md->photon128.state[30] = 2;
+	md->photon128.state[32] = 1;
+	md->photon128.state[34] = 1;
 
 	// set the byterate (bitrate in bytes), i.e. ceil(r/8) = ceil(20/8) = ceil(2.5) = 3
-	//md->photon.byterate = 3;
-	md->photon.bitrate = 16;
+	//md->photon128.byterate = 3;
+	md->photon128.bitrate = 16;
 
     return CRYPT_OK;
 }
@@ -557,19 +557,19 @@ int photon128_compress(hash_state *md, const unsigned char *in) {
     // in is an array of bytes, state is an array of nibbles
     for (i = 0; i < 2; ++i) {
 		for (j = 0; j < 2; ++j) {
-			md->photon.state[i*2+j] ^= in[(i & (0xF0 >> (j*4))) >> (1-j)*4];
+			md->photon128.state[i*2+j] ^= in[(i & (0xF0 >> (j*4))) >> (1-j)*4];
 		}
 	}
 
 	for (r = 0; r < 12; ++r) {
 		// AddConstants (AC)
 		for (i=0; i<d; i++) {
-			md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+			md->photon128.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 		}
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon.state[i] = S[md->photon.state[i]];
+			md->photon128.state[i] = S[md->photon128.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -580,11 +580,11 @@ int photon128_compress(hash_state *md, const unsigned char *in) {
 			// row j is rotated j times to the left
 			for (j=0; j<i; j++) {
 				// col 0 to col d-1
-				temp = md->photon.state[i*d];
+				temp = md->photon128.state[i*d];
 				for (k=0; k<(d-1); k++) {
-					md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+					md->photon128.state[i*d+k] = md->photon128.state[i*d+k+1];
 				}
-				md->photon.state[i*d+k] = temp;
+				md->photon128.state[i*d+k] = temp;
 			}
 		}
 
@@ -594,12 +594,12 @@ int photon128_compress(hash_state *md, const unsigned char *in) {
 		for (col=0; col<d; col++) {
 			for (i=0; i<d; i++) {
 				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+					y[i*d+col] ^= multp4bit(A[i][j], md->photon128.state[j*d+col], pp);
 				}
 			}
 		}
 
-		for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+		for (i=0; i<d*d; i++) md->photon128.state[i] = y[i];
 	}
 
 	return CRYPT_OK;
@@ -622,12 +622,12 @@ int photon128_process(hash_state * md, const unsigned char *in, unsigned long in
 
 	// if the length of message to be hashed is less than the bitrate,
 	// then we need to save them first, and wait until the next hash call
-	if (inlen < md->photon.bitrate) {
-		md->photon.saved_state[0] = (in[0] & 0xf0) >> 4;
-		md->photon.saved_state[1] = (in[0] & 0x0f)     ;
-		md->photon.saved_state[2] = (in[1] & 0xf0) >> 4;
-		md->photon.saved_state[3] = (in[1] & 0x0f)     ;
-		md->photon.pending = 1; // indicator to note that there are pending msg to be hashed
+	if (inlen < md->photon128.bitrate) {
+		md->photon128.saved_state[0] = (in[0] & 0xf0) >> 4;
+		md->photon128.saved_state[1] = (in[0] & 0x0f)     ;
+		md->photon128.saved_state[2] = (in[1] & 0xf0) >> 4;
+		md->photon128.saved_state[3] = (in[1] & 0x0f)     ;
+		md->photon128.pending = 1; // indicator to note that there are pending msg to be hashed
 
 		return CRYPT_OK;
 	}
@@ -636,7 +636,7 @@ int photon128_process(hash_state * md, const unsigned char *in, unsigned long in
 		if ((err = photon128_compress(md, in)) != CRYPT_OK) {
 			return err;
 		}
-		n = MIN(inlen, md->photon.bitrate);
+		n = MIN(inlen, md->photon128.bitrate);
 		in 		+= n;
 		inlen 	-= n;
 	}
@@ -672,11 +672,11 @@ int photon128_done(hash_state * md, unsigned char *out) {
 	// output digest is 128 bits = 16 x 8
 
     // 1 of 8 set of 16-bit output. "Out" holds 8-bit value.
-	out[0]  = (md->photon.state[0] << 4);
-	out[0] ^= (md->photon.state[1]);
+	out[0]  = (md->photon128.state[0] << 4);
+	out[0] ^= (md->photon128.state[1]);
 
-	out[1]  = (md->photon.state[2] << 4);
-	out[1] ^= (md->photon.state[3]);
+	out[1]  = (md->photon128.state[2] << 4);
+	out[1] ^= (md->photon128.state[3]);
 
 	// Apply P for another 7 times
 	for (pr = 0; pr < pR; ++pr) {
@@ -684,12 +684,12 @@ int photon128_done(hash_state * md, unsigned char *out) {
 		for (r = 0; r < 12; ++r) {
 			// AddConstants (AC)
 			for (i=0; i<d; i++) {
-				md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+				md->photon128.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 			}
 
 			// SubCells (SC)
 			for (i = 0; i < d*d; ++i) {
-				md->photon.state[i] = S[md->photon.state[i]];
+				md->photon128.state[i] = S[md->photon128.state[i]];
 			}
 
 			// ShiftRows (ShR)
@@ -700,11 +700,11 @@ int photon128_done(hash_state * md, unsigned char *out) {
 				// row j is rotated j times to the left
 				for (j=0; j<i; j++) {
 					// col 0 to col d-1
-					temp = md->photon.state[i*d];
+					temp = md->photon128.state[i*d];
 					for (k=0; k<(d-1); k++) {
-						md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+						md->photon128.state[i*d+k] = md->photon128.state[i*d+k+1];
 					}
-					md->photon.state[i*d+k] = temp;
+					md->photon128.state[i*d+k] = temp;
 				}
 			}
 
@@ -714,20 +714,20 @@ int photon128_done(hash_state * md, unsigned char *out) {
 			for (col=0; col<d; col++) {
 				for (i=0; i<d; i++) {
 					for (j=0; j<d; j++) {
-						y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+						y[i*d+col] ^= multp4bit(A[i][j], md->photon128.state[j*d+col], pp);
 					}
 				}
 			}
 
-			for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+			for (i=0; i<d*d; i++) md->photon128.state[i] = y[i];
 		}
 
 	    // output 16 bits
-		out[(pr+1)*2  ]  = (md->photon.state[0] << 4);
-		out[(pr+1)*2  ] ^= (md->photon.state[1]);
+		out[(pr+1)*2  ]  = (md->photon128.state[0] << 4);
+		out[(pr+1)*2  ] ^= (md->photon128.state[1]);
 
-		out[(pr+1)*2+1]  = (md->photon.state[2] << 4);
-		out[(pr+1)*2+1] ^= (md->photon.state[3]);
+		out[(pr+1)*2+1]  = (md->photon128.state[2] << 4);
+		out[(pr+1)*2+1] ^= (md->photon128.state[3]);
 	}
 
 	return CRYPT_OK;
