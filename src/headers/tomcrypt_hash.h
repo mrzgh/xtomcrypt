@@ -495,11 +495,13 @@ int photon80_init(hash_state * md);
 int photon80_compress(hash_state *md, const unsigned char *in);
 int photon80_process(hash_state * md, const unsigned char *in, unsigned long inlen);
 int photon80_done(hash_state * md, unsigned char *out);
+extern const struct ltc_hash_descriptor photon80_desc;
 
 int photon128_init(hash_state * md);
 int photon128_compress(hash_state *md, const unsigned char *in);
 int photon128_process(hash_state * md, const unsigned char *in, unsigned long inlen);
 int photon128_done(hash_state * md, unsigned char *out);
+extern const struct ltc_hash_descriptor photon128_desc;
 #endif
 
 
