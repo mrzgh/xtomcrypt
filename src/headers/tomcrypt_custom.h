@@ -261,8 +261,7 @@
 #define LTC_RIPEMD320
 #define LTC_BLAKE2S
 #define LTC_BLAKE2B
-#define LTC_PHOTON80
-#define LTC_PHOTON128
+#define LTC_PHOTON
 
 #define LTC_HASH_HELPERS
 

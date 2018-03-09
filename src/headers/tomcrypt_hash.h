@@ -147,7 +147,7 @@ struct blake2b_state {
 };
 #endif
 
-#ifdef LTC_PHOTON80
+#ifdef LTC_PHOTON
 struct photon80_state {
     ulong64 length;
     ulong32 curlen;
@@ -157,9 +157,7 @@ struct photon80_state {
     unsigned short bitrate; // in bits
     unsigned short pending; // 1 if there is a msg pending to be hashed, 0 if none
 };
-#endif
 
-#ifdef LTC_PHOTON128
 struct photon128_state {
     ulong64 length;
     ulong32 curlen;
