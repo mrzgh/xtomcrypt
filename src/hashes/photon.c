@@ -34,8 +34,8 @@ const struct ltc_hash_descriptor photon80_desc =
    200,                          /* internal ID */
    10,                           /* Size of digest in octets */
    3,                            /* Input block size in octets */
-   NULL,  						/* ASN.1 OID */
-   NULL,                         /* Length OID */
+   { 0 },  						/* ASN.1 OID */
+   1,                            /* Length OID */
    &photon80_init,
    &photon80_process,
    &photon80_done,
@@ -49,8 +49,8 @@ const struct ltc_hash_descriptor photon128_desc =
    201,                          /* internal ID */
    16,                           /* Size of digest in octets */
    2,                            /* Input block size in octets */
-   NULL,  						/* ASN.1 OID */
-   NULL,                         /* Length OID */
+   { 0 },  						/* ASN.1 OID */
+   1,                            /* Length OID */
    &photon128_init,
    &photon128_process,
    &photon128_done,
