@@ -722,6 +722,7 @@ int run_present() {
 	return CRYPT_OK;
 }
 
+
 int run_photon() {
 	int i;
 	hash_state hs;
@@ -797,6 +798,7 @@ int run_photon() {
 	}
 	return CRYPT_OK;
 }
+
 
 
 int main() {
