@@ -27,7 +27,7 @@ all: testsxtom.exe
 # Tool invocations
 testsxtom.exe: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
-	@echo 'Invoking: MacOS X C Linker'
+	@echo 'Invoking: Cygwin C Linker'
 	gcc  -o "testsxtom.exe" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '

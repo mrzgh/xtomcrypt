@@ -148,6 +148,40 @@ unsigned char multp4bit(unsigned char x, unsigned char y, unsigned char pp) {
     return result;
 }
 
+
+/**
+   Initialize the hash state
+   @param md   The hash state you wish to initialize
+   @return CRYPT_OK if successful
+*/
+int photon80_init(hash_state * md) {
+	int i;
+    //LTC_ARGCHK(md != NULL);
+
+	for (i = 0; i < 25; ++i) {
+		md->photon80.state[i] = 0;
+	}
+	// specific ones for PHOTON-80/20/16
+	// The t-bit internal state S is initialized by setting it to the
+	// value S_0 = IV = {0}^{t−24}||n/4||r||r', where || denotes the
+	// concatenation and each value is coded on 8 bits
+	// n  = 80, n/4=20 = 0x14
+	// r  = 20 = 0x14
+	// r' = 0x10
+	// IV = 00...00||0x14||0x14||0x10
+	md->photon80.state[19] = 1;
+	md->photon80.state[20] = 4;
+	md->photon80.state[21] = 1;
+	md->photon80.state[22] = 4;
+	md->photon80.state[23] = 1;
+
+	// set the byterate (bitrate in bytes), i.e. ceil(r/8) = ceil(20/8) = ceil(2.5) = 3
+	//md->photon128.byterate = 3;
+	md->photon80.bitrate = 20;
+
+    return CRYPT_OK;
+}
+
 /**
  * For simplicity, this function only accepts input which is exactly r bits
  *
@@ -511,7 +545,7 @@ int photon128_init(hash_state * md) {
 	}
 	// specific ones for PHOTON-128/16/16
 	// The t-bit internal state S is initialized by setting it to the
-	// value S_0 = IV = {0}^{t−24}||n/4||r||r′, where || denotes the
+	// value S_0 = IV = {0}^{t−24}||n/4||r||r', where || denotes the
 	// concatenation and each value is coded on 8 bits
 	// n  = 128, n/4=32 = 0x20
 	// r  = 16 = 0x10
