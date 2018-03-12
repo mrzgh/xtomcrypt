@@ -59,13 +59,13 @@ const struct ltc_hash_descriptor photon128_desc =
 };
 
 // 4x4 s-box
-unsigned char S[16] = {
+unsigned char S4ph[16] = {
 	0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD,
     0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2
 };
 
 // 8x8 s-box
-unsigned char S8[256] = {
+unsigned char S8ph[256] = {
 	0xcc, 0xc5, 0xc6, 0xcb, 0xc9, 0xc0, 0xca, 0xcd,
 	0xc3, 0xce, 0xcf, 0xc8, 0xc4, 0xc7, 0xc1, 0xc2,
 	0x5c, 0x55, 0x56, 0x5b, 0x59, 0x50, 0x5a, 0x5d,
@@ -220,7 +220,7 @@ int photon80_compress(hash_state *md, const unsigned char *in) {
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S[md->photon80.state[i]];
+			md->photon80.state[i] = S4ph[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -339,7 +339,7 @@ int photon80_done(hash_state * md, unsigned char *out) {
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S[md->photon80.state[i]];
+			md->photon80.state[i] = S4ph[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -388,7 +388,7 @@ int photon80_done(hash_state * md, unsigned char *out) {
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S[md->photon80.state[i]];
+			md->photon80.state[i] = S4ph[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -437,7 +437,7 @@ int photon80_done(hash_state * md, unsigned char *out) {
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S[md->photon80.state[i]];
+			md->photon80.state[i] = S4ph[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -486,7 +486,7 @@ int photon80_done(hash_state * md, unsigned char *out) {
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S[md->photon80.state[i]];
+			md->photon80.state[i] = S4ph[md->photon80.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -603,7 +603,7 @@ int photon128_compress(hash_state *md, const unsigned char *in) {
 
 		// SubCells (SC)
 		for (i = 0; i < d*d; ++i) {
-			md->photon128.state[i] = S[md->photon128.state[i]];
+			md->photon128.state[i] = S4ph[md->photon128.state[i]];
 		}
 
 		// ShiftRows (ShR)
@@ -723,7 +723,7 @@ int photon128_done(hash_state * md, unsigned char *out) {
 
 			// SubCells (SC)
 			for (i = 0; i < d*d; ++i) {
-				md->photon128.state[i] = S[md->photon128.state[i]];
+				md->photon128.state[i] = S4ph[md->photon128.state[i]];
 			}
 
 			// ShiftRows (ShR)

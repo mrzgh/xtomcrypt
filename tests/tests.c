@@ -806,7 +806,8 @@ int main() {
 //	run_testvectors_hash_function();
 //	run_testvectors_hmac();
 //	test_prng();
-	run_present();
+//	run_present();
+	run_photon();
 
 	return 0;
 }
