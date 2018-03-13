@@ -305,7 +305,7 @@ int photon80_process(hash_state * md, const unsigned char *in, unsigned long inl
    @return CRYPT_OK if successful
 */
 int photon80_done(hash_state * md, unsigned char *out) {
-	unsigned int r, i, j, k, d = 5;
+	unsigned int r, i, j, k, d = 5, pr, pR = 4;
 	unsigned char temp;
     unsigned char A[5][5] = {
     		{  1, 2, 9, 9, 2 },
@@ -330,201 +330,57 @@ int photon80_done(hash_state * md, unsigned char *out) {
 	out[1]  = (md->photon80.state[2] << 4);
 	out[1] ^= (md->photon80.state[3]);
 
-	// Apply P
-	for (r = 0; r < 12; ++r) {
-		// AddConstants (AC)
-		for (i=0; i<d; i++) {
-			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
-		}
-
-		// SubCells (SC)
-		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S4ph[md->photon80.state[i]];
-		}
-
-		// ShiftRows (ShR)
-		// row 0 is unmoved
-		// moving row 1 to row d-1
-		for (i=1; i<d; i++) {
-			// number of rotations
-			// row j is rotated j times to the left
-			for (j=0; j<i; j++) {
-				// col 0 to col d-1
-				temp = md->photon80.state[i*d];
-				for (k=0; k<(d-1); k++) {
-					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
-				}
-				md->photon80.state[i*d+k] = temp;
-			}
-		}
-
-		// MixColumnsSerial
-		for (i=0; i<d*d; i++) y[i] = 0;
-
-		for (col=0; col<d; col++) {
+	// Apply P for another 4 times
+	for (pr = 0; pr < pR; ++pr) {
+		// P has 12 rounds
+		for (r = 0; r < 12; ++r) {
+			// AddConstants (AC)
 			for (i=0; i<d; i++) {
-				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
+				md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+			}
+
+			// SubCells (SC)
+			for (i = 0; i < d*d; ++i) {
+				md->photon.state[i] = S[md->photon.state[i]];
+			}
+
+			// ShiftRows (ShR)
+			// row 0 is unmoved
+			// moving row 1 to row d-1
+			for (i=1; i<d; i++) {
+				// number of rotations
+				// row j is rotated j times to the left
+				for (j=0; j<i; j++) {
+					// col 0 to col d-1
+					temp = md->photon.state[i*d];
+					for (k=0; k<(d-1); k++) {
+						md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+					}
+					md->photon.state[i*d+k] = temp;
 				}
 			}
+
+			// MixColumnsSerial
+			for (i=0; i<d*d; i++) y[i] = 0;
+
+			for (col=0; col<d; col++) {
+				for (i=0; i<d; i++) {
+					for (j=0; j<d; j++) {
+						y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+					}
+				}
+			}
+
+			for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
 		}
 
-		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
+	    // output 16 bits
+		out[(pr+1)*2  ]  = (md->photon.state[0] << 4);
+		out[(pr+1)*2  ] ^= (md->photon.state[1]);
+
+		out[(pr+1)*2+1]  = (md->photon.state[2] << 4);
+		out[(pr+1)*2+1] ^= (md->photon.state[3]);
 	}
-
-    // 2 of 5 set of 16-bit output
-	out[2]  = (md->photon80.state[0] << 4);
-	out[2] ^= (md->photon80.state[1]);
-
-	out[3]  = (md->photon80.state[2] << 4);
-	out[3] ^= (md->photon80.state[3]);
-
-	// Apply P
-	for (r = 0; r < 12; ++r) {
-		// AddConstants (AC)
-		for (i=0; i<d; i++) {
-			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
-		}
-
-		// SubCells (SC)
-		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S4ph[md->photon80.state[i]];
-		}
-
-		// ShiftRows (ShR)
-		// row 0 is unmoved
-		// moving row 1 to row d-1
-		for (i=1; i<d; i++) {
-			// number of rotations
-			// row j is rotated j times to the left
-			for (j=0; j<i; j++) {
-				// col 0 to col d-1
-				temp = md->photon80.state[i*d];
-				for (k=0; k<(d-1); k++) {
-					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
-				}
-				md->photon80.state[i*d+k] = temp;
-			}
-		}
-
-		// MixColumnsSerial
-		for (i=0; i<d*d; i++) y[i] = 0;
-
-		for (col=0; col<d; col++) {
-			for (i=0; i<d; i++) {
-				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
-				}
-			}
-		}
-
-		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
-	}
-
-    // 3 of 5 set of 16-bit output
-	out[4]  = (md->photon80.state[0] << 4);
-	out[4] ^= (md->photon80.state[1]);
-
-	out[5]  = (md->photon80.state[2] << 4);
-	out[5] ^= (md->photon80.state[3]);
-
-	// Apply P
-	for (r = 0; r < 12; ++r) {
-		// AddConstants (AC)
-		for (i=0; i<d; i++) {
-			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
-		}
-
-		// SubCells (SC)
-		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S4ph[md->photon80.state[i]];
-		}
-
-		// ShiftRows (ShR)
-		// row 0 is unmoved
-		// moving row 1 to row d-1
-		for (i=1; i<d; i++) {
-			// number of rotations
-			// row j is rotated j times to the left
-			for (j=0; j<i; j++) {
-				// col 0 to col d-1
-				temp = md->photon80.state[i*d];
-				for (k=0; k<(d-1); k++) {
-					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
-				}
-				md->photon80.state[i*d+k] = temp;
-			}
-		}
-
-		// MixColumnsSerial
-		for (i=0; i<d*d; i++) y[i] = 0;
-
-		for (col=0; col<d; col++) {
-			for (i=0; i<d; i++) {
-				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
-				}
-			}
-		}
-
-		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
-	}
-
-    // 4 of 5 set of 16-bit output
-	out[6]  = (md->photon80.state[0] << 4);
-	out[6] ^= (md->photon80.state[1]);
-
-	out[7]  = (md->photon80.state[2] << 4);
-	out[7] ^= (md->photon80.state[3]);
-
-	// Apply P
-	for (r = 0; r < 12; ++r) {
-		// AddConstants (AC)
-		for (i=0; i<d; i++) {
-			md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
-		}
-
-		// SubCells (SC)
-		for (i = 0; i < d*d; ++i) {
-			md->photon80.state[i] = S4ph[md->photon80.state[i]];
-		}
-
-		// ShiftRows (ShR)
-		// row 0 is unmoved
-		// moving row 1 to row d-1
-		for (i=1; i<d; i++) {
-			// number of rotations
-			// row j is rotated j times to the left
-			for (j=0; j<i; j++) {
-				// col 0 to col d-1
-				temp = md->photon80.state[i*d];
-				for (k=0; k<(d-1); k++) {
-					md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
-				}
-				md->photon80.state[i*d+k] = temp;
-			}
-		}
-
-		// MixColumnsSerial
-		for (i=0; i<d*d; i++) y[i] = 0;
-
-		for (col=0; col<d; col++) {
-			for (i=0; i<d; i++) {
-				for (j=0; j<d; j++) {
-					y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
-				}
-			}
-		}
-
-		for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
-	}
-
-    // 5 of 5 set of 16-bit output
-	out[8]  = (md->photon80.state[0] << 4);
-	out[8] ^= (md->photon80.state[1]);
-
-	out[9]  = (md->photon80.state[2] << 4);
-	out[9] ^= (md->photon80.state[3]);
 
 	return CRYPT_OK;
 }
