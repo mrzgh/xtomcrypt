@@ -208,7 +208,7 @@ int photon80_compress(hash_state *md, const unsigned char *in) {
     // in is an array of bytes, state is an array of nibbles
     for (i = 0; i < 3; ++i) {
 		for (j = 0; j < 2; ++j) {
-			md->photon80.state[i] ^= in[(i & (0xF0 >> (j*4))) >> (1-j)*4];
+			md->photon.state[i*2+j] ^= ((in[i] & (0xf0 >> j*4)) >> 4*((j+1)%2));
 		}
 	}
 
@@ -289,7 +289,7 @@ int photon80_process(hash_state * md, const unsigned char *in, unsigned long inl
 			return err;
 		}
 		n = MIN(inlen, md->photon80.bitrate);
-		in 		+= n;
+		in 		+= (n/8);
 		inlen 	-= n;
 	}
 
@@ -447,7 +447,7 @@ int photon128_compress(hash_state *md, const unsigned char *in) {
     // in is an array of bytes, state is an array of nibbles
     for (i = 0; i < 2; ++i) {
 		for (j = 0; j < 2; ++j) {
-			md->photon128.state[i*2+j] ^= in[(i & (0xF0 >> (j*4))) >> (1-j)*4];
+			md->photon.state[i*2+j] ^= ((in[i] & (0xf0 >> j*4)) >> 4*((j+1)%2));
 		}
 	}
 
@@ -527,7 +527,7 @@ int photon128_process(hash_state * md, const unsigned char *in, unsigned long in
 			return err;
 		}
 		n = MIN(inlen, md->photon128.bitrate);
-		in 		+= n;
+		in 		+= (n/8);
 		inlen 	-= n;
 	}
 
