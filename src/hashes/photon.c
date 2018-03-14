@@ -208,7 +208,7 @@ int photon80_compress(hash_state *md, const unsigned char *in) {
     // in is an array of bytes, state is an array of nibbles
     for (i = 0; i < 3; ++i) {
 		for (j = 0; j < 2; ++j) {
-			md->photon.state[i*2+j] ^= ((in[i] & (0xf0 >> j*4)) >> 4*((j+1)%2));
+			md->photon80.state[i*2+j] ^= ((in[i] & (0xf0 >> j*4)) >> 4*((j+1)%2));
 		}
 	}
 
@@ -336,12 +336,12 @@ int photon80_done(hash_state * md, unsigned char *out) {
 		for (r = 0; r < 12; ++r) {
 			// AddConstants (AC)
 			for (i=0; i<d; i++) {
-				md->photon.state[i*d] ^= RC[r] ^ ICd[d-5][i];
+				md->photon80.state[i*d] ^= RC[r] ^ ICd[d-5][i];
 			}
 
 			// SubCells (SC)
 			for (i = 0; i < d*d; ++i) {
-				md->photon.state[i] = S[md->photon.state[i]];
+				md->photon80.state[i] = S[md->photon80.state[i]];
 			}
 
 			// ShiftRows (ShR)
@@ -352,11 +352,11 @@ int photon80_done(hash_state * md, unsigned char *out) {
 				// row j is rotated j times to the left
 				for (j=0; j<i; j++) {
 					// col 0 to col d-1
-					temp = md->photon.state[i*d];
+					temp = md->photon80.state[i*d];
 					for (k=0; k<(d-1); k++) {
-						md->photon.state[i*d+k] = md->photon.state[i*d+k+1];
+						md->photon80.state[i*d+k] = md->photon80.state[i*d+k+1];
 					}
-					md->photon.state[i*d+k] = temp;
+					md->photon80.state[i*d+k] = temp;
 				}
 			}
 
@@ -366,20 +366,20 @@ int photon80_done(hash_state * md, unsigned char *out) {
 			for (col=0; col<d; col++) {
 				for (i=0; i<d; i++) {
 					for (j=0; j<d; j++) {
-						y[i*d+col] ^= multp4bit(A[i][j], md->photon.state[j*d+col], pp);
+						y[i*d+col] ^= multp4bit(A[i][j], md->photon80.state[j*d+col], pp);
 					}
 				}
 			}
 
-			for (i=0; i<d*d; i++) md->photon.state[i] = y[i];
+			for (i=0; i<d*d; i++) md->photon80.state[i] = y[i];
 		}
 
 	    // output 16 bits
-		out[(pr+1)*2  ]  = (md->photon.state[0] << 4);
-		out[(pr+1)*2  ] ^= (md->photon.state[1]);
+		out[(pr+1)*2  ]  = (md->photon80.state[0] << 4);
+		out[(pr+1)*2  ] ^= (md->photon80.state[1]);
 
-		out[(pr+1)*2+1]  = (md->photon.state[2] << 4);
-		out[(pr+1)*2+1] ^= (md->photon.state[3]);
+		out[(pr+1)*2+1]  = (md->photon80.state[2] << 4);
+		out[(pr+1)*2+1] ^= (md->photon80.state[3]);
 	}
 
 	return CRYPT_OK;
@@ -447,7 +447,7 @@ int photon128_compress(hash_state *md, const unsigned char *in) {
     // in is an array of bytes, state is an array of nibbles
     for (i = 0; i < 2; ++i) {
 		for (j = 0; j < 2; ++j) {
-			md->photon.state[i*2+j] ^= ((in[i] & (0xf0 >> j*4)) >> 4*((j+1)%2));
+			md->photon128.state[i*2+j] ^= ((in[i] & (0xf0 >> j*4)) >> 4*((j+1)%2));
 		}
 	}
 
