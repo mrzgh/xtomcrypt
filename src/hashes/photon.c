@@ -341,7 +341,7 @@ int photon80_done(hash_state * md, unsigned char *out) {
 
 			// SubCells (SC)
 			for (i = 0; i < d*d; ++i) {
-				md->photon80.state[i] = S[md->photon80.state[i]];
+				md->photon80.state[i] = S4ph[md->photon80.state[i]];
 			}
 
 			// ShiftRows (ShR)
